@@ -1,25 +1,26 @@
-import { BlockPermutation, BlockType, Dimension, Player, Vector3 } from '@minecraft/server';
+import { BlockPermutation, Dimension, Player, Vector3 } from '@minecraft/server';
 import { BaseProcess } from './baseProcess';
 import { RepeatingTimer } from 'keystonemc';
+import { BlockDetail } from '../utils/blockDetail';
 
 export class ReplaceProcess extends BaseProcess {
   private positions: Vector3[];
-  private before: BlockPermutation;
-  private after: BlockPermutation;
+  private before: BlockDetail;
+  private after: BlockDetail;
   private index = 0;
 
   constructor(
     dimension: Dimension,
     positions: Vector3[],
-    beforeBlockType: BlockType,
-    afterBlockType: BlockType,
+    beforeBlockDetail: BlockDetail,
+    afterBlockDetail: BlockDetail,
     player?: Player
   ) {
     super(dimension, player);
 
     this.positions = positions;
-    this.before = BlockPermutation.resolve(beforeBlockType.id);
-    this.after = BlockPermutation.resolve(afterBlockType.id);
+    this.before = beforeBlockDetail;
+    this.after = afterBlockDetail;
   }
 
   override execute() {
@@ -36,12 +37,16 @@ export class ReplaceProcess extends BaseProcess {
       if (!block) return;
 
       const before = block.permutation;
-      if (before !== this.before) return;
-      if (before === this.after) return;
+      if (block.typeId != this.before.blockType.id) return;
+      if (this.before.blockStates && !block.permutation.matches(this.before.blockType.id, this.before.blockStates)) return;
 
-      block.setPermutation(this.after);
+      const afterBlock = BlockPermutation.resolve(
+        this.after.blockType.id,
+        this.after.blockStates ?? before.getAllStates()
+      );
+      block.setPermutation(afterBlock);
 
-      this.recordChange({ pos, before, after: this.after });
+      this.recordChange({ pos, before, after: afterBlock });
 
       if (!this.player) return;
       const p = this.changes.length / this.positions.length;

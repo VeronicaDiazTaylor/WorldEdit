@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { 
-  BlockType,
   CommandPermissionLevel,
   CustomCommandOrigin,
   CustomCommandParameter,
@@ -15,13 +14,17 @@ import { WeditProperty } from '../utils/weditProperty';
 import { callSession } from '../session/sessionManager';
 import { SetProcess } from '../process/setProcess';
 import { getPositionsInBox } from '../utils/coordsUtils';
+import { getBlockDetail } from '../utils/blockDetail';
 
 export class SetCommand extends BaseCommand {
   name: string = 'wedit:set';
   description: string = 'Sets all the blocks in the region';
   permissionLevel: CommandPermissionLevel = CommandPermissionLevel.GameDirectors;
   mandatoryParameters?: CustomCommandParameter[] = [
-    { name: 'pattern', type: CustomCommandParamType.BlockType }
+    { name: 'type', type: CustomCommandParamType.BlockType }
+  ];
+  optionalParameters?: CustomCommandParameter[] = [
+    { name: 'state', type: CustomCommandParamType.String }
   ];
   execute(origin: CustomCommandOrigin, ...args: any[]): CustomCommandResult | undefined {
     const sender = origin.sourceEntity;
@@ -44,7 +47,7 @@ export class SetCommand extends BaseCommand {
     const process = new SetProcess(
       sender.dimension,
       getPositionsInBox(pos1, pos2),
-      args[0][0] as BlockType,
+      getBlockDetail(args[0][0], args[0][1]),
       sender
     );
     

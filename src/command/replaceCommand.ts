@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { 
-  BlockType,
   CommandPermissionLevel,
   CustomCommandOrigin,
   CustomCommandParameter,
@@ -15,14 +14,19 @@ import { WeditProperty } from '../utils/weditProperty';
 import { callSession } from '../session/sessionManager';
 import { getPositionsInBox } from '../utils/coordsUtils';
 import { ReplaceProcess } from '../process/replaceProcess';
+import { getBlockDetail } from '../utils/blockDetail';
 
 export class ReplaceCommand extends BaseCommand {
   name: string = 'wedit:replace';
   description: string = '	Replace all blocks in the selection with another.';
   permissionLevel: CommandPermissionLevel = CommandPermissionLevel.GameDirectors;
   mandatoryParameters?: CustomCommandParameter[] = [
-    { name: 'before', type: CustomCommandParamType.BlockType },
-    { name: 'after', type: CustomCommandParamType.BlockType }
+    { name: 'beforeType', type: CustomCommandParamType.BlockType },
+    { name: 'afterType', type: CustomCommandParamType.BlockType }
+  ];
+  optionalParameters?: CustomCommandParameter[] = [
+    { name: 'beforeState', type: CustomCommandParamType.String },
+    { name: 'afterState', type: CustomCommandParamType.String }
   ];
   execute(origin: CustomCommandOrigin, ...args: any[]): CustomCommandResult | undefined {
     const sender = origin.sourceEntity;
@@ -45,8 +49,8 @@ export class ReplaceCommand extends BaseCommand {
     const process = new ReplaceProcess(
       sender.dimension,
       getPositionsInBox(pos1, pos2),
-      args[0][0] as BlockType,
-      args[0][1] as BlockType,
+      getBlockDetail(args[0][0], args[0][2]),
+      getBlockDetail(args[0][1], args[0][3]),
       sender
     );
     

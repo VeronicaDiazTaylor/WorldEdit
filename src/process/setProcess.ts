@@ -1,6 +1,7 @@
-import { BlockPermutation, BlockType, Dimension, Player, Vector3 } from '@minecraft/server';
+import { BlockPermutation, Dimension, Player, Vector3 } from '@minecraft/server';
 import { BaseProcess } from './baseProcess';
 import { RepeatingTimer } from 'keystonemc';
+import { BlockDetail } from '../utils/blockDetail';
 
 export class SetProcess extends BaseProcess {
   private positions: Vector3[];
@@ -10,13 +11,16 @@ export class SetProcess extends BaseProcess {
   constructor(
     dimension: Dimension,
     positions: Vector3[],
-    blockType: BlockType,
+    blockDetail: BlockDetail,
     player?: Player
   ) {
     super(dimension, player);
 
     this.positions = positions;
-    this.target = BlockPermutation.resolve(blockType.id);
+    this.target = BlockPermutation.resolve(
+      blockDetail.blockType.id,
+      blockDetail.blockStates
+    );
   }
 
   override execute() {
